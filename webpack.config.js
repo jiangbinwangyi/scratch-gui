@@ -6,6 +6,7 @@ var webpack = require('webpack');
 var CopyWebpackPlugin = require('copy-webpack-plugin');
 var HtmlWebpackPlugin = require('html-webpack-plugin');
 var UglifyJsPlugin = require('uglifyjs-webpack-plugin');
+var CompressionPlugin = require("compression-webpack-plugin")
 
 // PostCss
 var autoprefixer = require('autoprefixer');
@@ -16,7 +17,7 @@ const STATIC_PATH = process.env.STATIC_PATH || '/static';
 
 const base = {
     mode: process.env.NODE_ENV === 'production' ? 'production' : 'development',
-    devtool: 'cheap-module-source-map',
+    devtool: 'false',
     devServer: {
         contentBase: path.resolve(__dirname, 'build'),
         host: '0.0.0.0',
@@ -93,11 +94,31 @@ const base = {
     optimization: {
         minimizer: [
             new UglifyJsPlugin({
-                include: /\.min\.js$/
+                include: /\.min\.js$/,
+				cache: true,
+				extractComments: true,
+				uglifyOptions: {
+					warnings: true,
+				  mangle: {
+						except: ['$super', '$', 'exports', 'require', 'module', '_']
+					},
+					compress: {
+						warnings: false,
+						comments: false,
+					},
+					output: {
+						comments: false,
+					}
+				},
             })
         ]
     },
-    plugins: []
+    plugins: [
+		 new CompressionPlugin({
+			 algorithm: 'gzip',
+			 threshold: 10240,
+		  })
+	]
 };
 
 module.exports = [
@@ -147,26 +168,26 @@ module.exports = [
             new HtmlWebpackPlugin({
                 chunks: ['lib.min', 'gui'],
                 template: 'src/playground/index.ejs',
-                title: 'Scratch 3.0 GUI',
+                title: 'Scratch 3.0 - 核爆思维',
                 sentryConfig: process.env.SENTRY_CONFIG ? '"' + process.env.SENTRY_CONFIG + '"' : null
             }),
             new HtmlWebpackPlugin({
                 chunks: ['lib.min', 'blocksonly'],
                 template: 'src/playground/index.ejs',
                 filename: 'blocks-only.html',
-                title: 'Scratch 3.0 GUI: Blocks Only Example'
+                title: 'Scratch 3.0 - 核爆思维: Blocks Only Example'
             }),
             new HtmlWebpackPlugin({
                 chunks: ['lib.min', 'compatibilitytesting'],
                 template: 'src/playground/index.ejs',
                 filename: 'compatibility-testing.html',
-                title: 'Scratch 3.0 GUI: Compatibility Testing'
+                title: 'Scratch 3.0 - 核爆思维: Compatibility Testing'
             }),
             new HtmlWebpackPlugin({
                 chunks: ['lib.min', 'player'],
                 template: 'src/playground/index.ejs',
                 filename: 'player.html',
-                title: 'Scratch 3.0 GUI: Player Example'
+                title: 'Scratch 3.0 - 核爆思维: Player Example'
             }),
             new CopyWebpackPlugin([{
                 from: 'static',
